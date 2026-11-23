@@ -11,6 +11,14 @@
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as AdminRouteImport } from './routes/admin'
+import { Route as ApiPerfumesRouteImport } from './routes/api/perfumes'
+import { Route as ApiAdminEntrarRouteImport } from './routes/api/admin/entrar'
+import { Route as ApiAdminFotoRouteImport } from './routes/api/admin/foto'
+import { Route as ApiAdminLojaRouteImport } from './routes/api/admin/loja'
+import { Route as ApiAdminPerfumesRouteImport } from './routes/api/admin/perfumes'
+import { Route as ApiAdminSairRouteImport } from './routes/api/admin/sair'
+import { Route as ApiAdminSessaoRouteImport } from './routes/api/admin/sessao'
+import { Route as ApiAdminPerfumesIdRouteImport } from './routes/api/admin/perfumes/$id'
 
 const IndexRoute = IndexRouteImport.update({
   id: '/',
@@ -22,31 +30,133 @@ const AdminRoute = AdminRouteImport.update({
   path: '/admin',
   getParentRoute: () => rootRouteImport,
 } as any)
+const ApiPerfumesRoute = ApiPerfumesRouteImport.update({
+  id: '/api/perfumes',
+  path: '/api/perfumes',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ApiAdminEntrarRoute = ApiAdminEntrarRouteImport.update({
+  id: '/api/admin/entrar',
+  path: '/api/admin/entrar',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ApiAdminFotoRoute = ApiAdminFotoRouteImport.update({
+  id: '/api/admin/foto',
+  path: '/api/admin/foto',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ApiAdminLojaRoute = ApiAdminLojaRouteImport.update({
+  id: '/api/admin/loja',
+  path: '/api/admin/loja',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ApiAdminPerfumesRoute = ApiAdminPerfumesRouteImport.update({
+  id: '/api/admin/perfumes',
+  path: '/api/admin/perfumes',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ApiAdminSairRoute = ApiAdminSairRouteImport.update({
+  id: '/api/admin/sair',
+  path: '/api/admin/sair',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ApiAdminSessaoRoute = ApiAdminSessaoRouteImport.update({
+  id: '/api/admin/sessao',
+  path: '/api/admin/sessao',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ApiAdminPerfumesIdRoute = ApiAdminPerfumesIdRouteImport.update({
+  id: '/$id',
+  path: '/$id',
+  getParentRoute: () => ApiAdminPerfumesRoute,
+} as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/admin': typeof AdminRoute
+  '/api/perfumes': typeof ApiPerfumesRoute
+  '/api/admin/entrar': typeof ApiAdminEntrarRoute
+  '/api/admin/foto': typeof ApiAdminFotoRoute
+  '/api/admin/loja': typeof ApiAdminLojaRoute
+  '/api/admin/perfumes': typeof ApiAdminPerfumesRouteWithChildren
+  '/api/admin/sair': typeof ApiAdminSairRoute
+  '/api/admin/sessao': typeof ApiAdminSessaoRoute
+  '/api/admin/perfumes/$id': typeof ApiAdminPerfumesIdRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/admin': typeof AdminRoute
+  '/api/perfumes': typeof ApiPerfumesRoute
+  '/api/admin/entrar': typeof ApiAdminEntrarRoute
+  '/api/admin/foto': typeof ApiAdminFotoRoute
+  '/api/admin/loja': typeof ApiAdminLojaRoute
+  '/api/admin/perfumes': typeof ApiAdminPerfumesRouteWithChildren
+  '/api/admin/sair': typeof ApiAdminSairRoute
+  '/api/admin/sessao': typeof ApiAdminSessaoRoute
+  '/api/admin/perfumes/$id': typeof ApiAdminPerfumesIdRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
   '/admin': typeof AdminRoute
+  '/api/perfumes': typeof ApiPerfumesRoute
+  '/api/admin/entrar': typeof ApiAdminEntrarRoute
+  '/api/admin/foto': typeof ApiAdminFotoRoute
+  '/api/admin/loja': typeof ApiAdminLojaRoute
+  '/api/admin/perfumes': typeof ApiAdminPerfumesRouteWithChildren
+  '/api/admin/sair': typeof ApiAdminSairRoute
+  '/api/admin/sessao': typeof ApiAdminSessaoRoute
+  '/api/admin/perfumes/$id': typeof ApiAdminPerfumesIdRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
-  fullPaths: '/' | '/admin'
+  fullPaths:
+    | '/'
+    | '/admin'
+    | '/api/perfumes'
+    | '/api/admin/entrar'
+    | '/api/admin/foto'
+    | '/api/admin/loja'
+    | '/api/admin/perfumes'
+    | '/api/admin/sair'
+    | '/api/admin/sessao'
+    | '/api/admin/perfumes/$id'
   fileRoutesByTo: FileRoutesByTo
-  to: '/' | '/admin'
-  id: '__root__' | '/' | '/admin'
+  to:
+    | '/'
+    | '/admin'
+    | '/api/perfumes'
+    | '/api/admin/entrar'
+    | '/api/admin/foto'
+    | '/api/admin/loja'
+    | '/api/admin/perfumes'
+    | '/api/admin/sair'
+    | '/api/admin/sessao'
+    | '/api/admin/perfumes/$id'
+  id:
+    | '__root__'
+    | '/'
+    | '/admin'
+    | '/api/perfumes'
+    | '/api/admin/entrar'
+    | '/api/admin/foto'
+    | '/api/admin/loja'
+    | '/api/admin/perfumes'
+    | '/api/admin/sair'
+    | '/api/admin/sessao'
+    | '/api/admin/perfumes/$id'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
   AdminRoute: typeof AdminRoute
+  ApiPerfumesRoute: typeof ApiPerfumesRoute
+  ApiAdminEntrarRoute: typeof ApiAdminEntrarRoute
+  ApiAdminFotoRoute: typeof ApiAdminFotoRoute
+  ApiAdminLojaRoute: typeof ApiAdminLojaRoute
+  ApiAdminPerfumesRoute: typeof ApiAdminPerfumesRouteWithChildren
+  ApiAdminSairRoute: typeof ApiAdminSairRoute
+  ApiAdminSessaoRoute: typeof ApiAdminSessaoRoute
 }
 
 declare module '@tanstack/react-router' {
@@ -65,12 +175,86 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AdminRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/api/perfumes': {
+      id: '/api/perfumes'
+      path: '/api/perfumes'
+      fullPath: '/api/perfumes'
+      preLoaderRoute: typeof ApiPerfumesRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/api/admin/entrar': {
+      id: '/api/admin/entrar'
+      path: '/api/admin/entrar'
+      fullPath: '/api/admin/entrar'
+      preLoaderRoute: typeof ApiAdminEntrarRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/api/admin/foto': {
+      id: '/api/admin/foto'
+      path: '/api/admin/foto'
+      fullPath: '/api/admin/foto'
+      preLoaderRoute: typeof ApiAdminFotoRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/api/admin/loja': {
+      id: '/api/admin/loja'
+      path: '/api/admin/loja'
+      fullPath: '/api/admin/loja'
+      preLoaderRoute: typeof ApiAdminLojaRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/api/admin/perfumes': {
+      id: '/api/admin/perfumes'
+      path: '/api/admin/perfumes'
+      fullPath: '/api/admin/perfumes'
+      preLoaderRoute: typeof ApiAdminPerfumesRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/api/admin/sair': {
+      id: '/api/admin/sair'
+      path: '/api/admin/sair'
+      fullPath: '/api/admin/sair'
+      preLoaderRoute: typeof ApiAdminSairRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/api/admin/sessao': {
+      id: '/api/admin/sessao'
+      path: '/api/admin/sessao'
+      fullPath: '/api/admin/sessao'
+      preLoaderRoute: typeof ApiAdminSessaoRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/api/admin/perfumes/$id': {
+      id: '/api/admin/perfumes/$id'
+      path: '/$id'
+      fullPath: '/api/admin/perfumes/$id'
+      preLoaderRoute: typeof ApiAdminPerfumesIdRouteImport
+      parentRoute: typeof ApiAdminPerfumesRoute
+    }
   }
 }
+
+interface ApiAdminPerfumesRouteChildren {
+  ApiAdminPerfumesIdRoute: typeof ApiAdminPerfumesIdRoute
+}
+
+const ApiAdminPerfumesRouteChildren: ApiAdminPerfumesRouteChildren = {
+  ApiAdminPerfumesIdRoute: ApiAdminPerfumesIdRoute,
+}
+
+const ApiAdminPerfumesRouteWithChildren =
+  ApiAdminPerfumesRoute._addFileChildren(ApiAdminPerfumesRouteChildren)
 
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   AdminRoute: AdminRoute,
+  ApiPerfumesRoute: ApiPerfumesRoute,
+  ApiAdminEntrarRoute: ApiAdminEntrarRoute,
+  ApiAdminFotoRoute: ApiAdminFotoRoute,
+  ApiAdminLojaRoute: ApiAdminLojaRoute,
+  ApiAdminPerfumesRoute: ApiAdminPerfumesRouteWithChildren,
+  ApiAdminSairRoute: ApiAdminSairRoute,
+  ApiAdminSessaoRoute: ApiAdminSessaoRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)

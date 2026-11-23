@@ -1,0 +1,57 @@
+{% extends "base.html" %}
+{% block titulo %}Admin — Import Frazão{% endblock %}
+{% block extra %}<meta name="robots" content="noindex" />{% endblock %}
+{% block corpo %}
+  <header class="barra">
+    <div class="miolo barra-interna">
+      <div>
+        <p class="marca">Import Frazão · Admin</p>
+        <p class="mudo">Fotos, preços e o que aparece na vitrine</p>
+      </div>
+      <div class="acoes">
+        <a class="botao" href="{{ url_for('inicio') }}">Ver site</a>
+        <form method="post" action="{{ url_for('sair') }}">
+          <input type="hidden" name="csrf" value="{{ csrf }}" />
+          <button class="botao fantasma" type="submit">Sair</button>
+        </form>
+      </div>
+    </div>
+  </header>
+  <main class="miolo bloco">
+    <form class="linha-contato" method="post" action="{{ url_for('salvar_loja') }}">
+      <input type="hidden" name="csrf" value="{{ csrf }}" />
+      <label for="whatsapp">WhatsApp da loja</label>
+      <input id="whatsapp" name="whatsapp" inputmode="tel" placeholder="11999999999" value="{{ whatsapp }}" />
+      <button class="botao" type="submit">Salvar contato</button>
+    </form>
+
+    <div class="topo-lista">
+      <h1>Perfumes <span class="mudo">({{ perfumes|length }})</span></h1>
+      <a class="botao cheio" href="{{ url_for('novo_perfume') }}">+ Novo perfume</a>
+    </div>
+
+    <div class="lista">
+      {% for perfume in perfumes %}
+        <article class="item">
+          <img src="{{ perfume.imagem_url or imagem_categoria(perfume.categoria) }}" alt="" />
+          <div>
+            <p class="item-nome">{{ perfume.nome }}{% if not perfume.ativo %} <span class="mudo">(oculto)</span>{% endif %}</p>
+            <p class="mudo">{{ perfume.marca or 'Sem marca' }} · {{ perfume.categoria }} · {{ perfume.ml }}ml{% if not perfume.imagem_url %} · sem foto{% endif %}</p>
+          </div>
+          <p class="preco">{{ formatar_preco(perfume.preco) }}</p>
+          <form method="post" action="{{ url_for('alternar_ativo', id_perfume=perfume.id) }}">
+            <input type="hidden" name="csrf" value="{{ csrf }}" />
+            <button class="botao" type="submit">{{ 'Ocultar' if perfume.ativo else 'Mostrar' }}</button>
+          </form>
+          <a class="botao" href="{{ url_for('editar_perfume', id_perfume=perfume.id) }}">Editar</a>
+          <form method="post" action="{{ url_for('excluir_perfume', id_perfume=perfume.id) }}" onsubmit="return confirm('Excluir este perfume?')">
+            <input type="hidden" name="csrf" value="{{ csrf }}" />
+            <button class="botao fantasma" type="submit">Excluir</button>
+          </form>
+        </article>
+      {% else %}
+        <p class="centro mudo vazio">Nenhum perfume. Cadastre um e envie a foto.</p>
+      {% endfor %}
+    </div>
+  </main>
+{% endblock %}

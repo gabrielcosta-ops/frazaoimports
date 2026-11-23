@@ -8,6 +8,13 @@ pnpm-debug.log*
 lerna-debug.log*
 
 node_modules
+__pycache__/
+*.py[cod]
+.venv/
+venv/
+data/*.db
+data/*.db-wal
+data/*.db-shm
 dist
 dist-ssr
 .output

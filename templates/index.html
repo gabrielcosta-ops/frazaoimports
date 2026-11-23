@@ -1,0 +1,161 @@
+{% extends "base.html" %}
+{% block corpo %}
+  <header class="barra">
+    <div class="miolo barra-interna">
+      <a href="#topo" class="marca">
+        <span class="selo">IF</span>
+        <span>Import Frazão</span>
+      </a>
+      <nav>
+        <a href="#catalogo">Catálogo</a>
+        <a href="{{ url_for('admin') }}">Admin</a>
+      </nav>
+    </div>
+  </header>
+
+  <section id="topo" class="hero">
+    <img src="{{ url_for('static', filename='img/hero.jpg') }}" alt="Perfumes sobre pedra e seda" />
+    <div class="hero-texto miolo">
+      <p class="olho">Perfumaria importada</p>
+      <h1>A assinatura <em>que fica</em>.</h1>
+      <p class="lead">Fragrâncias selecionadas do mundo todo, para cada momento e personalidade.</p>
+      <a class="botao" href="#catalogo">Ver coleção</a>
+    </div>
+  </section>
+
+  <section class="miolo bloco">
+    <h2 class="centro">Categorias</h2>
+    <div class="grade-cats">
+      {% for categoria in categorias %}
+        <a href="#catalogo" class="cat" data-atalho="{{ categoria.nome }}">
+          <img src="{{ url_for('static', filename=categoria.imagem) }}" alt="{{ categoria.nome }}" />
+          <span>
+            <strong>{{ categoria.nome }}</strong>
+            <small>{{ categoria.descricao }}</small>
+          </span>
+        </a>
+      {% endfor %}
+    </div>
+  </section>
+
+  <section id="catalogo" class="catalogo">
+    <div class="miolo">
+      <h2 class="centro">Catálogo</h2>
+      <p id="contagem" class="centro mudo">{{ perfumes|length }} {{ 'fragrância' if perfumes|length == 1 else 'fragrâncias' }}</p>
+      <div class="filtros">
+        <button type="button" class="chip ativo" data-filtro="Todos">Todos</button>
+        {% for categoria in categorias %}
+          <button type="button" class="chip" data-filtro="{{ categoria.nome }}">{{ categoria.nome }}</button>
+        {% endfor %}
+      </div>
+      <div class="busca-wrap">
+        <input id="busca" type="search" placeholder="Buscar perfume, marca ou nota" />
+      </div>
+      <p id="vazio" class="centro mudo" hidden>Nenhum perfume nessa seleção.</p>
+      <div class="grade">
+        {% for perfume in perfumes %}
+          {% set foto = perfume.imagem_url or imagem_categoria(perfume.categoria) %}
+          {% set conversa = link_whatsapp(whatsapp, perfume.nome) %}
+          <article
+            class="card"
+            data-perfume
+            data-categoria="{{ perfume.categoria }}"
+            data-texto="{{ (perfume.nome ~ ' ' ~ perfume.marca ~ ' ' ~ perfume.notas ~ ' ' ~ perfume.categoria)|lower }}"
+          >
+            <button
+              type="button"
+              class="foto"
+              data-abrir
+              data-nome="{{ perfume.nome }}"
+              data-foto="{{ foto }}"
+              data-detalhe="{{ perfume.marca or 'Import Frazão' }} · {{ perfume.categoria }} · {{ perfume.ml }}ml"
+              data-notas="{{ perfume.notas }}"
+              aria-label="Ver {{ perfume.nome }}"
+            >
+              <img src="{{ foto }}" alt="{{ perfume.nome }}" class="{{ 'frasco' if perfume.imagem_url else '' }}" />
+            </button>
+            <div class="card-corpo">
+              <p class="olho-card">{{ perfume.marca or 'Import Frazão' }} · {{ perfume.categoria }}</p>
+              <h3>{{ perfume.nome }}</h3>
+              <p class="mudo">{{ perfume.notas }}{% if perfume.notas %} · {% endif %}{{ perfume.ml }}ml</p>
+              <p class="preco">{{ formatar_preco(perfume.preco) if perfume.preco > 0 else 'Sob consulta' }}</p>
+              {% if conversa %}
+                <a class="pedido" href="{{ conversa }}" target="_blank" rel="noreferrer">Pedir no WhatsApp</a>
+              {% endif %}
+            </div>
+          </article>
+        {% endfor %}
+      </div>
+    </div>
+  </section>
+
+  <footer>
+    <p class="nome">Import Frazão</p>
+    <p>Perfumes importados</p>
+  </footer>
+
+  {% if contato %}
+    <a class="flutuante" href="{{ contato }}" target="_blank" rel="noreferrer">WhatsApp</a>
+  {% endif %}
+
+  <dialog id="lightbox">
+    <form method="dialog"><button class="fechar" aria-label="Fechar">×</button></form>
+    <h2 id="luz-nome"></h2>
+    <img id="luz-foto" alt="" />
+    <p id="luz-detalhe" class="mudo"></p>
+    <p id="luz-notas"></p>
+  </dialog>
+
+  <script>
+    const chips = document.querySelectorAll("[data-filtro]");
+    const busca = document.querySelector("#busca");
+    const cards = document.querySelectorAll("[data-perfume]");
+    const contagem = document.querySelector("#contagem");
+    const vazio = document.querySelector("#vazio");
+    function aplicar() {
+      const ativo = document.querySelector("[data-filtro].ativo");
+      const categoria = ativo ? ativo.dataset.filtro : "Todos";
+      const termo = (busca.value || "").trim().toLocaleLowerCase("pt-BR");
+      let total = 0;
+      cards.forEach((card) => {
+        const okCategoria = categoria === "Todos" || card.dataset.categoria === categoria;
+        const okBusca = !termo || (card.dataset.texto || "").includes(termo);
+        const mostra = okCategoria && okBusca;
+        card.hidden = !mostra;
+        if (mostra) total += 1;
+      });
+      contagem.textContent = total + (total === 1 ? " fragrância" : " fragrâncias");
+      vazio.hidden = total !== 0;
+    }
+    chips.forEach((chip) => {
+      chip.addEventListener("click", () => {
+        chips.forEach((item) => item.classList.remove("ativo"));
+        chip.classList.add("ativo");
+        aplicar();
+      });
+    });
+    document.querySelectorAll("[data-atalho]").forEach((atalho) => {
+      atalho.addEventListener("click", () => {
+        const nome = atalho.dataset.atalho;
+        const chip = document.querySelector('[data-filtro="' + nome + '"]');
+        if (!chip) return;
+        chips.forEach((item) => item.classList.remove("ativo"));
+        chip.classList.add("ativo");
+        aplicar();
+      });
+    });
+    busca.addEventListener("input", aplicar);
+    const luz = document.querySelector("#lightbox");
+    document.querySelectorAll("[data-abrir]").forEach((botao) => {
+      botao.addEventListener("click", () => {
+        document.querySelector("#luz-nome").textContent = botao.dataset.nome || "";
+        const foto = document.querySelector("#luz-foto");
+        foto.src = botao.dataset.foto || "";
+        foto.alt = botao.dataset.nome || "";
+        document.querySelector("#luz-detalhe").textContent = botao.dataset.detalhe || "";
+        document.querySelector("#luz-notas").textContent = botao.dataset.notas || "";
+        luz.showModal();
+      });
+    });
+  </script>
+{% endblock %}

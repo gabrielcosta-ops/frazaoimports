@@ -1,0 +1,16 @@
+{% extends "base.html" %}
+{% block titulo %}Admin — Import Frazão{% endblock %}
+{% block extra %}<meta name="robots" content="noindex" />{% endblock %}
+{% block corpo %}
+  <main class="centro-tela">
+    <form class="caixa" method="post" action="{{ url_for('entrar') }}">
+      <h1>Import Frazão</h1>
+      <p class="olho centro">Área admin</p>
+      <input type="hidden" name="csrf" value="{{ csrf }}" />
+      <label for="senha">Senha</label>
+      <input id="senha" name="senha" type="password" required autocomplete="current-password" />
+      <button class="botao cheio" type="submit">Entrar</button>
+      <p class="mudo centro">A senha fica em ADMIN_PASSWORD, no arquivo .env ou no WSGI do PythonAnywhere.</p>
+    </form>
+  </main>
+{% endblock %}

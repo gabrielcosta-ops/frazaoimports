@@ -1,0 +1,149 @@
+{
+  "whatsapp": "",
+  "perfumes": [
+    {
+      "id": "11111111-1111-4111-8111-111111111101",
+      "created_at": "2026-01-01T12:00:01.000Z",
+      "nome": "Rose Éclat",
+      "marca": "Maison Lune",
+      "notas": "Rosa, peônia, almíscar",
+      "ml": 100,
+      "preco": 489,
+      "categoria": "Feminino",
+      "imagem_url": null,
+      "ativo": true
+    },
+    {
+      "id": "11111111-1111-4111-8111-111111111102",
+      "nome": "Velours Rose",
+      "marca": "Atelier Doré",
+      "notas": "Baunilha, framboesa, íris",
+      "ml": 90,
+      "preco": 559,
+      "categoria": "Feminino",
+      "imagem_url": null,
+      "ativo": true,
+      "created_at": "2026-01-01T12:00:02.000Z"
+    },
+    {
+      "id": "11111111-1111-4111-8111-111111111103",
+      "nome": "Fleur de Nuit",
+      "marca": "Maison Lune",
+      "notas": "Jasmim, tuberosa, âmbar",
+      "ml": 100,
+      "preco": 619,
+      "categoria": "Feminino",
+      "imagem_url": null,
+      "ativo": true,
+      "created_at": "2026-01-01T12:00:03.000Z"
+    },
+    {
+      "id": "11111111-1111-4111-8111-111111111104",
+      "nome": "Velvet Oak",
+      "marca": "Noble House",
+      "notas": "Carvalho, couro, cardamomo",
+      "ml": 100,
+      "preco": 529,
+      "categoria": "Masculino",
+      "imagem_url": null,
+      "ativo": true,
+      "created_at": "2026-01-01T12:00:04.000Z"
+    },
+    {
+      "id": "11111111-1111-4111-8111-111111111105",
+      "nome": "Black Cedar",
+      "marca": "Atelier Doré",
+      "notas": "Cedro, vetiver, pimenta",
+      "ml": 100,
+      "preco": 479,
+      "categoria": "Masculino",
+      "imagem_url": null,
+      "ativo": true,
+      "created_at": "2026-01-01T12:00:05.000Z"
+    },
+    {
+      "id": "11111111-1111-4111-8111-111111111106",
+      "nome": "Tabac Royal",
+      "marca": "Noble House",
+      "notas": "Tabaco, mel, fava tonka",
+      "ml": 75,
+      "preco": 649,
+      "categoria": "Masculino",
+      "imagem_url": null,
+      "ativo": true,
+      "created_at": "2026-01-01T12:00:06.000Z"
+    },
+    {
+      "id": "11111111-1111-4111-8111-111111111107",
+      "nome": "Oud Majesty",
+      "marca": "Dar Al Oud",
+      "notas": "Oud, rosa, açafrão",
+      "ml": 100,
+      "preco": 399,
+      "categoria": "Árabes",
+      "imagem_url": null,
+      "ativo": true,
+      "created_at": "2026-01-01T12:00:07.000Z"
+    },
+    {
+      "id": "11111111-1111-4111-8111-111111111108",
+      "nome": "Amber Sultan",
+      "marca": "Al Sahra",
+      "notas": "Âmbar, incenso, baunilha",
+      "ml": 100,
+      "preco": 349,
+      "categoria": "Árabes",
+      "imagem_url": null,
+      "ativo": true,
+      "created_at": "2026-01-01T12:00:08.000Z"
+    },
+    {
+      "id": "11111111-1111-4111-8111-111111111109",
+      "nome": "Layali Gold",
+      "marca": "Dar Al Oud",
+      "notas": "Sândalo, oud, praliné",
+      "ml": 80,
+      "preco": 429,
+      "categoria": "Árabes",
+      "imagem_url": null,
+      "ativo": true,
+      "created_at": "2026-01-01T12:00:09.000Z"
+    },
+    {
+      "id": "11111111-1111-4111-8111-111111111110",
+      "nome": "Lumière",
+      "marca": "Studio Blanc",
+      "notas": "Limão siciliano, neroli, chá",
+      "ml": 100,
+      "preco": 459,
+      "categoria": "Unissex",
+      "imagem_url": null,
+      "ativo": true,
+      "created_at": "2026-01-01T12:00:10.000Z"
+    },
+    {
+      "id": "11111111-1111-4111-8111-111111111111",
+      "nome": "Sel Marin",
+      "marca": "Studio Blanc",
+      "notas": "Sal marinho, sálvia, musgo",
+      "ml": 100,
+      "preco": 499,
+      "categoria": "Unissex",
+      "imagem_url": null,
+      "ativo": true,
+      "created_at": "2026-01-01T12:00:11.000Z"
+    },
+    {
+      "id": "11111111-1111-4111-8111-111111111112",
+      "nome": "Iris Poudre",
+      "marca": "Atelier Doré",
+      "notas": "Íris, almíscar branco, cedro",
+      "ml": 50,
+      "preco": 389,
+      "categoria": "Unissex",
+      "imagem_url": null,
+      "ativo": true,
+      "created_at": "2026-01-01T12:00:12.000Z"
+    }
+  ]
+}

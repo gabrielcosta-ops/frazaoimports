@@ -1,0 +1,52 @@
+{% extends "base.html" %}
+{% block titulo %}{{ 'Editar perfume' if perfume.id else 'Novo perfume' }} — Import Frazão{% endblock %}
+{% block extra %}<meta name="robots" content="noindex" />{% endblock %}
+{% block corpo %}
+  <header class="barra">
+    <div class="miolo barra-interna">
+      <a class="marca" href="{{ url_for('admin') }}">← Admin</a>
+    </div>
+  </header>
+  <main class="miolo bloco">
+    <form class="caixa larga" method="post" enctype="multipart/form-data" action="{{ url_for('editar_perfume', id_perfume=perfume.id) if perfume.id else url_for('novo_perfume') }}">
+      <h1>{{ 'Editar perfume' if perfume.id else 'Novo perfume' }}</h1>
+      <input type="hidden" name="csrf" value="{{ csrf }}" />
+      <label for="nome">Nome</label>
+      <input id="nome" name="nome" required maxlength="80" value="{{ perfume.nome }}" />
+      <label for="marca">Marca</label>
+      <input id="marca" name="marca" maxlength="80" value="{{ perfume.marca }}" />
+      <label for="notas">Notas</label>
+      <textarea id="notas" name="notas" maxlength="240" rows="3">{{ perfume.notas }}</textarea>
+      <div class="duas">
+        <div>
+          <label for="preco">Preço (R$)</label>
+          <input id="preco" name="preco" type="number" min="0" step="0.01" value="{{ perfume.preco }}" />
+        </div>
+        <div>
+          <label for="ml">Tamanho (ml)</label>
+          <input id="ml" name="ml" type="number" min="1" max="1000" value="{{ perfume.ml }}" />
+        </div>
+      </div>
+      <p class="rotulo">Categoria</p>
+      <div class="filtros esquerda">
+        {% for categoria in categorias %}
+          <label class="chip {{ 'ativo' if perfume.categoria == categoria.nome else '' }}">
+            <input type="radio" name="categoria" value="{{ categoria.nome }}" {% if perfume.categoria == categoria.nome %}checked{% endif %} />
+            {{ categoria.nome }}
+          </label>
+        {% endfor %}
+      </div>
+      <p class="rotulo">Foto do perfume</p>
+      {% if perfume.imagem_url %}
+        <img class="preview" src="{{ perfume.imagem_url }}" alt="" />
+        <label class="check"><input type="checkbox" name="remover_foto" value="1" /> Remover foto</label>
+      {% elif perfume.categoria %}
+        <img class="preview" src="{{ imagem_categoria(perfume.categoria) }}" alt="" />
+      {% endif %}
+      <input name="foto" type="file" accept="image/jpeg,image/png,image/webp" />
+      <p class="mudo">JPG, PNG ou WebP até 8 MB.</p>
+      <label class="check"><input type="checkbox" name="ativo" value="1" {% if perfume.ativo %}checked{% endif %} /> Mostrar no site</label>
+      <button class="botao cheio" type="submit">Salvar</button>
+    </form>
+  </main>
+{% endblock %}
