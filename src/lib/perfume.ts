@@ -95,10 +95,54 @@ export function normalizarWhatsapp(
   return { ok: true, whatsapp: digitos };
 }
 
-export function linkWhatsapp(numero: string, nome: string): string | null {
+function foneWhatsapp(numero: string): string | null {
   const digitos = numero.replace(/\D/g, "");
   if (!digitos) return null;
-  const fone = digitos.startsWith("55") ? digitos : `55${digitos}`;
+  return digitos.startsWith("55") ? digitos : `55${digitos}`;
+}
+
+export function linkWhatsapp(numero: string, nome: string): string | null {
+  const fone = foneWhatsapp(numero);
+  if (!fone) return null;
   const texto = `Olá! Vi o perfume ${nome} na vitrine Import Frazão e quero saber mais.`;
   return `https://wa.me/${fone}?text=${encodeURIComponent(texto)}`;
+}
+
+export function mensagemCompra(
+  perfume: { nome: string; marca: string; categoria: string; notas: string; ml: number; preco: number },
+  quantidade: number,
+): string {
+  const unidades = Math.min(20, Math.max(1, Math.round(quantidade) || 1));
+  const unitario =
+    perfume.preco > 0
+      ? perfume.preco.toLocaleString("pt-BR", { style: "currency", currency: "BRL" })
+      : "Sob consulta";
+  const total =
+    perfume.preco > 0
+      ? (perfume.preco * unidades).toLocaleString("pt-BR", { style: "currency", currency: "BRL" })
+      : "Sob consulta";
+  return [
+    "Olá! Quero comprar este perfume na Import Frazão:",
+    "",
+    `Perfume: ${perfume.nome}`,
+    `Marca: ${perfume.marca || "Import Frazão"}`,
+    `Categoria: ${perfume.categoria}`,
+    `Volume: ${perfume.ml} ml`,
+    perfume.notas ? `Notas: ${perfume.notas}` : "",
+    `Preço: ${unitario}`,
+    `Quantidade: ${unidades}`,
+    `Total: ${total}`,
+  ]
+    .filter(Boolean)
+    .join("\n");
+}
+
+export function linkCompra(
+  numero: string,
+  perfume: { nome: string; marca: string; categoria: string; notas: string; ml: number; preco: number },
+  quantidade: number,
+): string | null {
+  const fone = foneWhatsapp(numero);
+  if (!fone) return null;
+  return `https://wa.me/${fone}?text=${encodeURIComponent(mensagemCompra(perfume, quantidade))}`;
 }

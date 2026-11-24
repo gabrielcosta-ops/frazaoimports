@@ -2,7 +2,7 @@ import { createFileRoute, Link } from "@tanstack/react-router";
 import { useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { listarVitrine } from "@/lib/perfumes-api";
-import { linkWhatsapp, type Perfume } from "@/lib/perfume";
+import { linkCompra, linkWhatsapp, type Perfume } from "@/lib/perfume";
 import logo from "@/assets/logo.jpeg.asset.json";
 import hero from "@/assets/hero-perfumes.jpg";
 import { categorias, formatarPreco, type Categoria } from "@/data/perfumes";
@@ -32,6 +32,7 @@ function Index() {
   const [ativa, setAtiva] = useState<Categoria | "Todos">("Todos");
   const [busca, setBusca] = useState("");
   const [aberto, setAberto] = useState<Perfume | null>(null);
+  const [quantidade, setQuantidade] = useState(1);
   const { data, isError, refetch } = useQuery({
     queryKey: ["vitrine"],
     queryFn: listarVitrine,
@@ -48,6 +49,11 @@ function Index() {
       .includes(termo);
   });
   const contato = whatsapp ? linkWhatsapp(whatsapp, "da coleção") : null;
+
+  function abrirPerfume(perfume: Perfume) {
+    setQuantidade(1);
+    setAberto(perfume);
+  }
 
   return (
     <div className="min-h-screen">
@@ -174,12 +180,11 @@ function Index() {
           )}
           <div className="mt-12 grid gap-8 sm:grid-cols-2 lg:grid-cols-3">
             {lista.map((perfume) => {
-              const conversa = whatsapp ? linkWhatsapp(whatsapp, perfume.nome) : null;
               return (
                 <article key={perfume.id} className="group rise border border-border/70 bg-background">
                   <button
                     type="button"
-                    onClick={() => setAberto(perfume)}
+                    onClick={() => abrirPerfume(perfume)}
                     aria-label={`Ver ${perfume.nome}`}
                     className="block aspect-square w-full overflow-hidden bg-muted text-left"
                   >
@@ -203,16 +208,13 @@ function Index() {
                     <p className="mt-3 text-lg text-primary">
                       {perfume.preco > 0 ? formatarPreco(Number(perfume.preco)) : "Sob consulta"}
                     </p>
-                    {conversa && (
-                      <a
-                        href={conversa}
-                        target="_blank"
-                        rel="noreferrer"
-                        className="mt-4 inline-block text-xs uppercase tracking-[0.25em] text-primary underline-offset-4 hover:underline"
-                      >
-                        Pedir no WhatsApp
-                      </a>
-                    )}
+                    <button
+                      type="button"
+                      onClick={() => abrirPerfume(perfume)}
+                      className="mt-4 text-xs uppercase tracking-[0.25em] text-primary underline-offset-4 hover:underline"
+                    >
+                      Ver e comprar
+                    </button>
                   </div>
                 </article>
               );
@@ -238,23 +240,103 @@ function Index() {
       )}
 
       <Dialog open={!!aberto} onOpenChange={(open) => !open && setAberto(null)}>
-        <DialogContent className="sm:max-w-md">
+        <DialogContent className="max-h-[92vh] gap-0 overflow-y-auto p-0 sm:max-w-3xl">
           {aberto && (
-            <>
-              <DialogTitle className="font-display text-3xl">{aberto.nome}</DialogTitle>
-              <img
-                src={aberto.imagem_url || imagemDe(aberto.categoria)}
-                alt={aberto.nome}
-                className="max-h-[60vh] w-full bg-muted object-contain"
-              />
-              <p className="text-sm text-muted-foreground">
-                {aberto.marca} · {aberto.categoria} · {aberto.ml}ml
-              </p>
-              {aberto.notas && <p className="text-sm">{aberto.notas}</p>}
-            </>
+            <Ficha
+              perfume={aberto}
+              quantidade={quantidade}
+              aoMudarQuantidade={setQuantidade}
+              whatsapp={whatsapp}
+            />
           )}
         </DialogContent>
       </Dialog>
+    </div>
+  );
+}
+
+function Ficha({
+  perfume,
+  quantidade,
+  aoMudarQuantidade,
+  whatsapp,
+}: {
+  perfume: Perfume;
+  quantidade: number;
+  aoMudarQuantidade: (valor: number) => void;
+  whatsapp: string;
+}) {
+  const compra = linkCompra(whatsapp, perfume, quantidade);
+  const unitario = perfume.preco > 0 ? formatarPreco(Number(perfume.preco)) : "Sob consulta";
+  const total = perfume.preco > 0 ? formatarPreco(Number(perfume.preco) * quantidade) : "Sob consulta";
+  const linhas = [
+    ["Marca", perfume.marca || "Import Frazão"],
+    ["Categoria", perfume.categoria],
+    ["Volume", `${perfume.ml} ml`],
+    ["Notas", perfume.notas || "Não informadas"],
+    ["Preço", unitario],
+  ];
+
+  return (
+    <div className="grid md:grid-cols-[minmax(0,0.9fr)_minmax(0,1.1fr)]">
+      <img
+        src={perfume.imagem_url || imagemDe(perfume.categoria)}
+        alt={perfume.nome}
+        className={`min-h-64 w-full bg-muted md:min-h-full ${perfume.imagem_url ? "object-contain p-8" : "object-cover"}`}
+      />
+      <div className="flex flex-col gap-5 p-6 pr-12">
+        <div>
+          <p className="text-[11px] uppercase tracking-[0.3em] text-muted-foreground">{perfume.categoria}</p>
+          <DialogTitle className="mt-2 font-display text-4xl leading-none">{perfume.nome}</DialogTitle>
+        </div>
+        <dl className="divide-y divide-border border border-border">
+          {linhas.map(([rotulo, valor]) => (
+            <div key={rotulo} className="grid grid-cols-[7rem_1fr] gap-3 px-4 py-3 text-sm">
+              <dt className="text-muted-foreground">{rotulo}</dt>
+              <dd>{valor}</dd>
+            </div>
+          ))}
+        </dl>
+        <div className="flex items-center justify-between gap-4">
+          <div className="flex items-center border border-border">
+            <button
+              type="button"
+              className="px-4 py-2 text-lg"
+              onClick={() => aoMudarQuantidade(Math.max(1, quantidade - 1))}
+              aria-label="Diminuir quantidade"
+            >
+              −
+            </button>
+            <span className="min-w-8 text-center text-sm">{quantidade}</span>
+            <button
+              type="button"
+              className="px-4 py-2 text-lg"
+              onClick={() => aoMudarQuantidade(Math.min(20, quantidade + 1))}
+              aria-label="Aumentar quantidade"
+            >
+              +
+            </button>
+          </div>
+          <p className="text-right">
+            <span className="block text-[11px] uppercase tracking-[0.25em] text-muted-foreground">Total</span>
+            <span className="font-display text-3xl text-primary">{total}</span>
+          </p>
+        </div>
+        {compra ? (
+          <a
+            href={compra}
+            target="_blank"
+            rel="noreferrer"
+            className="bg-primary px-6 py-4 text-center text-xs uppercase tracking-[0.3em] text-primary-foreground"
+          >
+            Comprar no WhatsApp
+          </a>
+        ) : (
+          <p className="border border-border px-4 py-3 text-sm text-muted-foreground">
+            O WhatsApp da loja ainda não foi cadastrado no admin.
+          </p>
+        )}
+      </div>
     </div>
   );
 }

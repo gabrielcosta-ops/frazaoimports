@@ -97,12 +97,20 @@ async function buscar(privilegiado: boolean): Promise<Perfume[]> {
   return ((data ?? []) as Linha[]).map(linhaParaPerfume);
 }
 
-export function listarPublico(): Promise<Vitrine> {
-  return buscar(false).then((perfumes) => ({ whatsapp: "", perfumes }));
+async function lerWhatsapp(): Promise<string> {
+  const { data, error } = await cliente(false).from("loja").select("valor").eq("chave", "whatsapp").maybeSingle();
+  if (error || !data || typeof data.valor !== "string") return "";
+  return data.valor;
 }
 
-export function listarAdmin(): Promise<Vitrine> {
-  return buscar(true).then((perfumes) => ({ whatsapp: "", perfumes }));
+export async function listarPublico(): Promise<Vitrine> {
+  const [perfumes, whatsapp] = await Promise.all([buscar(false), lerWhatsapp()]);
+  return { whatsapp, perfumes };
+}
+
+export async function listarAdmin(): Promise<Vitrine> {
+  const [perfumes, whatsapp] = await Promise.all([buscar(true), lerWhatsapp()]);
+  return { whatsapp, perfumes };
 }
 
 export async function salvarPerfume(entrada: EntradaPerfume, id: string | null) {
@@ -155,15 +163,16 @@ export async function excluirPerfume(id: string) {
   return { ok: true as const };
 }
 
-export function salvarWhatsapp(
+export async function salvarWhatsapp(
   valor: string,
 ): Promise<{ ok: true; whatsapp: string } | { ok: false; erro: string }> {
   const numero = normalizarWhatsapp(valor);
-  if (!numero.ok) return Promise.resolve(numero);
-  return Promise.resolve({
-    ok: false,
-    erro: "O WhatsApp da loja ainda não tem tabela no Supabase.",
-  });
+  if (!numero.ok) return numero;
+  const { error } = await cliente(true)
+    .from("loja")
+    .upsert({ chave: "whatsapp", valor: numero.whatsapp }, { onConflict: "chave" });
+  if (error) return { ok: false, erro: "Não foi possível salvar o WhatsApp." };
+  return { ok: true, whatsapp: numero.whatsapp };
 }
 
 const TIPOS: Record<string, string> = {

@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { linkWhatsapp, normalizarWhatsapp, validarPerfume } from "@/lib/perfume";
+import { linkCompra, linkWhatsapp, mensagemCompra, normalizarWhatsapp, validarPerfume } from "@/lib/perfume";
 
 const base = {
   nome: "Oud Majesty",
@@ -48,5 +48,18 @@ describe("perfume", () => {
   it("normaliza o WhatsApp e monta o link", () => {
     expect(normalizarWhatsapp("(11) 98888-7777")).toEqual({ ok: true, whatsapp: "11988887777" });
     expect(linkWhatsapp("11988887777", "Rose")).toContain("wa.me/5511988887777");
+  });
+
+  it("monta o pedido com as especificações do perfume", () => {
+    const texto = mensagemCompra(base, 2);
+    expect(texto).toContain("Perfume: Oud Majesty");
+    expect(texto).toContain("Marca: Dar Al Oud");
+    expect(texto).toContain("Categoria: Árabes");
+    expect(texto).toContain("Volume: 100 ml");
+    expect(texto).toContain("Notas: Oud, rosa");
+    expect(texto).toContain("Quantidade: 2");
+    const link = linkCompra("11988887777", base, 2);
+    expect(link).toContain("wa.me/5511988887777");
+    expect(link).toContain(encodeURIComponent("Oud Majesty"));
   });
 });

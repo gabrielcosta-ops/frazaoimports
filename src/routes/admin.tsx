@@ -212,7 +212,7 @@ function Painel({ aoSair }: { aoSair: () => void }) {
           className="flex flex-wrap items-end gap-3 border border-border bg-card p-4"
         >
           <div className="min-w-64 flex-1 space-y-2">
-            <Label htmlFor="whatsapp">WhatsApp da loja</Label>
+            <Label htmlFor="whatsapp">WhatsApp que recebe os pedidos</Label>
             <Input
               id="whatsapp"
               inputMode="tel"
