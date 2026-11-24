@@ -113,9 +113,6 @@ function Login({ aoEntrar }: { aoEntrar: () => void }) {
         <Button type="submit" className="w-full" disabled={carregando}>
           {carregando ? "Entrando…" : "Entrar"}
         </Button>
-        <p className="text-center text-xs text-muted-foreground">
-          A senha fica em <span className="text-foreground">ADMIN_PASSWORD</span> no arquivo .env.
-        </p>
       </form>
     </Centro>
   );
