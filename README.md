@@ -1,40 +1,16 @@
 # Essência Perfumada
 
-## PythonAnywhere (Flask + SQLite)
+## Render (FastAPI + Supabase)
 
-O site que sobe no PythonAnywhere é o app Flask desta pasta. O catálogo fica em `data/catalogo.db` e as fotos em `uploads/perfumes/`. Não precisa de Node nem do Supabase.
+O backend está na pasta `backend` (FastAPI). O catálogo e as fotos ficam no Supabase, não num arquivo local. O `render.yaml` na raiz aponta o serviço para essa pasta.
 
-1. Envie a pasta do projeto para `/home/SEU_USUARIO/ess-ncia-perfumada`. Deixe de fora `node_modules`, `.venv` e `data/*.db`.
-2. No console Bash do PythonAnywhere:
+1. No painel do Supabase, em Storage, crie um bucket chamado `perfumes`.
+2. Copie a URL do projeto, a chave publishable e a chave secret (`service_role`).
+3. No [Render](https://dashboard.render.com), crie um Blueprint deste repositório. Ele lê o `render.yaml` e usa `backend` como raiz.
+4. Preencha `SUPABASE_URL`, `SUPABASE_PUBLISHABLE_KEY`, `SUPABASE_SECRET_KEY` e `ADMIN_PASSWORD`.
+5. A vitrine abre na URL do serviço e o admin em `/admin`.
 
-```bash
-cd ~/ess-ncia-perfumada
-python3 -m venv .venv
-source .venv/bin/activate
-pip install -r requirements.txt
-```
-
-3. Em **Web**, crie um app manual (Flask/WSGI), escolha o Python do virtualenv e use o diretório do projeto como working directory.
-4. No arquivo WSGI do painel (não é o `wsgi.py` do projeto), cole:
-
-```python
-import os
-import sys
-
-project = "/home/SEU_USUARIO/ess-ncia-perfumada"
-if project not in sys.path:
-    sys.path.insert(0, project)
-
-os.environ["ADMIN_PASSWORD"] = "troque-esta-senha"
-os.environ["SECRET_KEY"] = "troque-esta-chave-longa"
-
-from wsgi import application
-```
-
-5. Aperte **Reload**. A primeira visita cria o SQLite e carrega os perfumes de exemplo.
-6. O admin fica em `/admin`.
-
-Para testar nesta máquina: `pip install -r requirements.txt` e `python app.py`. Abre em `http://127.0.0.1:5000`.
+Para testar nesta máquina, dentro de `backend`: `pip install -r requirements.txt` e `python app.py`. Abre em `http://127.0.0.1:5000`. Sem a `SUPABASE_SECRET_KEY`, a vitrine lê o banco, mas o admin não consegue gravar. O `.env` pode ficar na raiz do repositório.
 
 loja de perfumes vitrine catalogo com perfumes . por categoria! faz ai bem tcham
 

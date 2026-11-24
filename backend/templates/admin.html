@@ -18,12 +18,17 @@
     </div>
   </header>
   <main class="miolo bloco">
+    {% if not pode_gravar %}
+      <p class="aviso erro">Para salvar perfumes e fotos, defina SUPABASE_SECRET_KEY no Render. A vitrine continua lendo o banco.</p>
+    {% endif %}
+    {% if tem_loja %}
     <form class="linha-contato" method="post" action="{{ url_for('salvar_loja') }}">
       <input type="hidden" name="csrf" value="{{ csrf }}" />
       <label for="whatsapp">WhatsApp da loja</label>
       <input id="whatsapp" name="whatsapp" inputmode="tel" placeholder="11999999999" value="{{ whatsapp }}" />
       <button class="botao" type="submit">Salvar contato</button>
     </form>
+    {% endif %}
 
     <div class="topo-lista">
       <h1>Perfumes <span class="mudo">({{ perfumes|length }})</span></h1>
