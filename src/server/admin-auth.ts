@@ -26,7 +26,8 @@ function lerEnvArquivo(nome: string): string | undefined {
 }
 
 function env(nome: string, padrao: string): string {
-  return process.env[nome] || lerEnvArquivo(nome) || padrao;
+  const bruto = process.env[nome] || lerEnvArquivo(nome) || padrao;
+  return bruto.trim().replace(/^["']|["']$/g, "");
 }
 
 function segredo(): string {

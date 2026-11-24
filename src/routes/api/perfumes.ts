@@ -4,8 +4,13 @@ export const Route = createFileRoute("/api/perfumes")({
   server: {
     handlers: {
       GET: async () => {
-        const { listarPublico } = await import("@/server/catalog");
-        return Response.json(await listarPublico());
+        try {
+          const { listarPublico } = await import("@/server/catalog");
+          return Response.json(await listarPublico());
+        } catch (erro) {
+          const mensagem = erro instanceof Error ? erro.message : "Não foi possível ler o catálogo.";
+          return Response.json({ erro: mensagem }, { status: 500 });
+        }
       },
     },
   },

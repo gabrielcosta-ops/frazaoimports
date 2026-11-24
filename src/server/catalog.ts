@@ -1,6 +1,6 @@
-import { mkdir, readFile, rm, writeFile } from "node:fs/promises";
-import path from "node:path";
+import { createClient, type SupabaseClient } from "@supabase/supabase-js";
 import {
+  ehCategoria,
   normalizarWhatsapp,
   validarPerfume,
   type EntradaPerfume,
@@ -8,160 +8,161 @@ import {
   type Vitrine,
 } from "@/lib/perfume";
 
-const ARQUIVO = path.join(process.cwd(), "data", "perfumes.json");
-const PASTA_FOTOS = path.join(process.cwd(), "public", "uploads", "perfumes");
-
 export class ErroCliente extends Error {}
 
-type ArquivoCatalogo = {
-  whatsapp: string;
-  perfumes: Perfume[];
+type Linha = {
+  id: string;
+  nome: string;
+  marca: string;
+  notas: string;
+  ml: number | string;
+  preco: number | string;
+  categoria: string;
+  imagem_url: string | null;
+  ativo: boolean;
+  created_at: string;
 };
 
-const SEMENTE: Perfume[] = [
-  perfume("11111111-1111-4111-8111-111111111101", "Rose Éclat", "Maison Lune", "Rosa, peônia, almíscar", 100, 489, "Feminino", 1),
-  perfume("11111111-1111-4111-8111-111111111102", "Velours Rose", "Atelier Doré", "Baunilha, framboesa, íris", 90, 559, "Feminino", 2),
-  perfume("11111111-1111-4111-8111-111111111103", "Fleur de Nuit", "Maison Lune", "Jasmim, tuberosa, âmbar", 100, 619, "Feminino", 3),
-  perfume("11111111-1111-4111-8111-111111111104", "Velvet Oak", "Noble House", "Carvalho, couro, cardamomo", 100, 529, "Masculino", 4),
-  perfume("11111111-1111-4111-8111-111111111105", "Black Cedar", "Atelier Doré", "Cedro, vetiver, pimenta", 100, 479, "Masculino", 5),
-  perfume("11111111-1111-4111-8111-111111111106", "Tabac Royal", "Noble House", "Tabaco, mel, fava tonka", 75, 649, "Masculino", 6),
-  perfume("11111111-1111-4111-8111-111111111107", "Oud Majesty", "Dar Al Oud", "Oud, rosa, açafrão", 100, 399, "Árabes", 7),
-  perfume("11111111-1111-4111-8111-111111111108", "Amber Sultan", "Al Sahra", "Âmbar, incenso, baunilha", 100, 349, "Árabes", 8),
-  perfume("11111111-1111-4111-8111-111111111109", "Layali Gold", "Dar Al Oud", "Sândalo, oud, praliné", 80, 429, "Árabes", 9),
-  perfume("11111111-1111-4111-8111-111111111110", "Lumière", "Studio Blanc", "Limão siciliano, neroli, chá", 100, 459, "Unissex", 10),
-  perfume("11111111-1111-4111-8111-111111111111", "Sel Marin", "Studio Blanc", "Sal marinho, sálvia, musgo", 100, 499, "Unissex", 11),
-  perfume("11111111-1111-4111-8111-111111111112", "Iris Poudre", "Atelier Doré", "Íris, almíscar branco, cedro", 50, 389, "Unissex", 12),
-];
+const clientes = new Map<string, SupabaseClient>();
 
-function perfume(
-  id: string,
-  nome: string,
-  marca: string,
-  notas: string,
-  ml: number,
-  preco: number,
-  categoria: Perfume["categoria"],
-  ordem: number,
-): Perfume {
+function limpar(valor: string | undefined): string {
+  return (valor ?? "").trim().replace(/^["']|["']$/g, "");
+}
+
+function env(nome: string): string {
+  return limpar(process.env[nome]);
+}
+
+function urlSupabase(): string {
+  const endereco = env("SUPABASE_URL") || env("VITE_SUPABASE_URL");
+  if (!endereco) throw new ErroCliente("Defina SUPABASE_URL na Vercel.");
+  return endereco.replace(/\/+$/, "");
+}
+
+function chavePublica(): string {
+  const chave =
+    env("SUPABASE_PUBLISHABLE_KEY") || env("VITE_SUPABASE_PUBLISHABLE_KEY") || env("SUPABASE_ANON_KEY");
+  if (!chave) throw new ErroCliente("Defina SUPABASE_PUBLISHABLE_KEY na Vercel.");
+  return chave;
+}
+
+function chaveSecreta(): string {
+  const chave = env("SUPABASE_SECRET_KEY") || env("SUPABASE_SERVICE_ROLE_KEY");
+  if (!chave) throw new ErroCliente("Defina SUPABASE_SECRET_KEY na Vercel para gravar no banco.");
+  return chave;
+}
+
+function cliente(privilegiado: boolean): SupabaseClient {
+  const chave = privilegiado ? chaveSecreta() : chavePublica();
+  const pronto = clientes.get(chave);
+  if (pronto) return pronto;
+  const criado = createClient(urlSupabase(), chave, {
+    auth: { persistSession: false, autoRefreshToken: false, storage: undefined },
+    global: {
+      fetch: (input, init) => {
+        const headers = new Headers(init?.headers);
+        if (chave.startsWith("sb_") && headers.get("Authorization") === `Bearer ${chave}`) {
+          headers.delete("Authorization");
+        }
+        headers.set("apikey", chave);
+        headers.set("user-agent", "frazaoimports");
+        return fetch(input, { ...init, headers });
+      },
+    },
+  });
+  clientes.set(chave, criado);
+  return criado;
+}
+
+function linhaParaPerfume(linha: Linha): Perfume {
   return {
-    id,
-    nome,
-    marca,
-    notas,
-    ml,
-    preco,
-    categoria,
-    imagem_url: null,
-    ativo: true,
-    created_at: new Date(Date.UTC(2026, 0, 1, 12, 0, ordem)).toISOString(),
+    id: linha.id,
+    nome: linha.nome,
+    marca: linha.marca ?? "",
+    notas: linha.notas ?? "",
+    ml: Number(linha.ml),
+    preco: Number(linha.preco),
+    categoria: ehCategoria(linha.categoria) ? linha.categoria : "Unissex",
+    imagem_url: linha.imagem_url,
+    ativo: Boolean(linha.ativo),
+    created_at: linha.created_at,
   };
 }
 
-let fila: Promise<unknown> = Promise.resolve();
-
-function emFila<T>(tarefa: () => Promise<T>): Promise<T> {
-  const proxima = fila.then(tarefa, tarefa);
-  fila = proxima.then(
-    () => undefined,
-    () => undefined,
-  );
-  return proxima;
-}
-
-async function carregar(): Promise<ArquivoCatalogo> {
-  try {
-    const texto = await readFile(ARQUIVO, "utf8");
-    const dados = JSON.parse(texto) as ArquivoCatalogo;
-    if (!dados || !Array.isArray(dados.perfumes)) throw new ErroCliente("Catálogo inválido.");
-    return {
-      whatsapp: typeof dados.whatsapp === "string" ? dados.whatsapp : "",
-      perfumes: dados.perfumes,
-    };
-  } catch (erro) {
-    const codigo = erro && typeof erro === "object" && "code" in erro ? erro.code : undefined;
-    if (codigo === "ENOENT") {
-      const vazio = { whatsapp: "", perfumes: SEMENTE };
-      await gravar(vazio);
-      return vazio;
-    }
-    if (erro instanceof ErroCliente) throw erro;
-    throw new ErroCliente("Não foi possível ler o catálogo.");
-  }
-}
-
-async function gravar(dados: ArquivoCatalogo): Promise<void> {
-  await mkdir(path.dirname(ARQUIVO), { recursive: true });
-  await writeFile(ARQUIVO, JSON.stringify(dados, null, 2), "utf8");
-}
-
-function caminhoFoto(url: string): string | null {
-  if (!url.startsWith("/uploads/perfumes/") || url.includes("..")) return null;
-  const nome = path.basename(url);
-  if (!/^[\w.-]+$/.test(nome)) return null;
-  const alvo = path.join(PASTA_FOTOS, nome);
-  if (!alvo.startsWith(PASTA_FOTOS)) return null;
-  return alvo;
-}
-
-async function apagarFoto(url: string | null): Promise<void> {
-  if (!url) return;
-  const alvo = caminhoFoto(url);
-  if (!alvo) return;
-  await rm(alvo, { force: true });
+async function buscar(privilegiado: boolean): Promise<Perfume[]> {
+  let consulta = cliente(privilegiado).from("perfumes").select("*").order("created_at");
+  if (!privilegiado) consulta = consulta.eq("ativo", true);
+  const { data, error } = await consulta;
+  if (error) throw new ErroCliente("Não foi possível ler o catálogo no Supabase.");
+  return ((data ?? []) as Linha[]).map(linhaParaPerfume);
 }
 
 export function listarPublico(): Promise<Vitrine> {
-  return emFila(async () => {
-    const dados = await carregar();
-    return { whatsapp: dados.whatsapp, perfumes: dados.perfumes.filter((item) => item.ativo) };
-  });
+  return buscar(false).then((perfumes) => ({ whatsapp: "", perfumes }));
 }
 
 export function listarAdmin(): Promise<Vitrine> {
-  return emFila(async () => {
-    const dados = await carregar();
-    return { whatsapp: dados.whatsapp, perfumes: dados.perfumes };
-  });
+  return buscar(true).then((perfumes) => ({ whatsapp: "", perfumes }));
 }
 
-export function salvarPerfume(entrada: EntradaPerfume, id: string | null) {
-  return emFila(async () => {
-    const dados = await carregar();
-    const atual = id ? (dados.perfumes.find((item) => item.id === id) ?? null) : null;
-    if (id && !atual) return { ok: false as const, status: 404, erro: "Perfume não encontrado." };
-    const checado = validarPerfume(entrada, atual);
-    if (!checado.ok) return { ok: false as const, status: 400, erro: checado.erro };
-    if (atual?.imagem_url && atual.imagem_url !== checado.perfume.imagem_url) {
-      await apagarFoto(atual.imagem_url);
-    }
-    dados.perfumes = atual
-      ? dados.perfumes.map((item) => (item.id === atual.id ? checado.perfume : item))
-      : [...dados.perfumes, checado.perfume];
-    await gravar(dados);
-    return { ok: true as const, perfume: checado.perfume };
-  });
-}
-
-export function excluirPerfume(id: string) {
-  return emFila(async () => {
-    const dados = await carregar();
-    const atual = dados.perfumes.find((item) => item.id === id);
-    if (!atual) return { ok: false as const, status: 404, erro: "Perfume não encontrado." };
-    dados.perfumes = dados.perfumes.filter((item) => item.id !== id);
-    await gravar(dados);
+export async function salvarPerfume(entrada: EntradaPerfume, id: string | null) {
+  const atual = id ? (await buscar(true)).find((item) => item.id === id) ?? null : null;
+  if (id && !atual) return { ok: false as const, status: 404, erro: "Perfume não encontrado." };
+  const checado = validarPerfume(entrada, atual);
+  if (!checado.ok) return { ok: false as const, status: 400, erro: checado.erro };
+  const gravacao = cliente(true).from("perfumes");
+  const { data, error } = atual
+    ? await gravacao
+        .update({
+          nome: checado.perfume.nome,
+          marca: checado.perfume.marca,
+          notas: checado.perfume.notas,
+          ml: checado.perfume.ml,
+          preco: checado.perfume.preco,
+          categoria: checado.perfume.categoria,
+          imagem_url: checado.perfume.imagem_url,
+          ativo: checado.perfume.ativo,
+        })
+        .eq("id", atual.id)
+        .select("*")
+        .single()
+    : await gravacao
+        .insert({
+          nome: checado.perfume.nome,
+          marca: checado.perfume.marca,
+          notas: checado.perfume.notas,
+          ml: checado.perfume.ml,
+          preco: checado.perfume.preco,
+          categoria: checado.perfume.categoria,
+          imagem_url: checado.perfume.imagem_url,
+          ativo: checado.perfume.ativo,
+        })
+        .select("*")
+        .single();
+  if (error || !data) throw new ErroCliente("O Supabase recusou a gravação. Confira a SUPABASE_SECRET_KEY.");
+  if (atual?.imagem_url && atual.imagem_url !== checado.perfume.imagem_url) {
     await apagarFoto(atual.imagem_url);
-    return { ok: true as const };
-  });
+  }
+  return { ok: true as const, perfume: linhaParaPerfume(data as Linha) };
 }
 
-export function salvarWhatsapp(valor: string) {
-  return emFila(async () => {
-    const numero = normalizarWhatsapp(valor);
-    if (!numero.ok) return numero;
-    const dados = await carregar();
-    dados.whatsapp = numero.whatsapp;
-    await gravar(dados);
-    return { ok: true as const, whatsapp: numero.whatsapp };
+export async function excluirPerfume(id: string) {
+  const atual = (await buscar(true)).find((item) => item.id === id);
+  if (!atual) return { ok: false as const, status: 404, erro: "Perfume não encontrado." };
+  const { error } = await cliente(true).from("perfumes").delete().eq("id", id);
+  if (error) throw new ErroCliente("Não foi possível excluir o perfume.");
+  await apagarFoto(atual.imagem_url);
+  return { ok: true as const };
+}
+
+export function salvarWhatsapp(
+  valor: string,
+): Promise<{ ok: true; whatsapp: string } | { ok: false; erro: string }> {
+  const numero = normalizarWhatsapp(valor);
+  if (!numero.ok) return Promise.resolve(numero);
+  return Promise.resolve({
+    ok: false,
+    erro: "O WhatsApp da loja ainda não tem tabela no Supabase.",
   });
 }
 
@@ -175,8 +176,26 @@ export async function guardarFoto(arquivo: File): Promise<string> {
   const extensao = TIPOS[arquivo.type];
   if (!extensao) throw new ErroCliente("Envie uma foto JPG, PNG ou WebP.");
   if (arquivo.size > 8 * 1024 * 1024) throw new ErroCliente("A foto precisa ter no máximo 8 MB.");
-  await mkdir(PASTA_FOTOS, { recursive: true });
   const nome = `${crypto.randomUUID()}.${extensao}`;
-  await writeFile(path.join(PASTA_FOTOS, nome), new Uint8Array(await arquivo.arrayBuffer()));
-  return `/uploads/perfumes/${nome}`;
+  const { error } = await cliente(true)
+    .storage.from("perfumes")
+    .upload(nome, new Uint8Array(await arquivo.arrayBuffer()), { contentType: arquivo.type, upsert: false });
+  if (error) throw new ErroCliente("Não foi possível enviar a foto. Crie o bucket perfumes no Supabase.");
+  return cliente(true).storage.from("perfumes").getPublicUrl(nome).data.publicUrl;
+}
+
+function caminhoFoto(url: string | null): string | null {
+  if (!url) return null;
+  const marca = "/perfumes/";
+  const indice = url.indexOf(marca);
+  if (indice < 0) return null;
+  const nome = decodeURIComponent(url.slice(indice + marca.length).split("?")[0] ?? "");
+  if (!nome || nome.includes("..") || nome.includes("/")) return null;
+  return nome;
+}
+
+async function apagarFoto(url: string | null): Promise<void> {
+  const nome = caminhoFoto(url);
+  if (!nome) return;
+  await cliente(true).storage.from("perfumes").remove([nome]);
 }

@@ -24,19 +24,29 @@ export const Route = createFileRoute("/api/admin/perfumes/$id")({
           imagem_url: typeof corpo.imagem_url === "string" ? corpo.imagem_url : null,
           ativo: corpo.ativo !== false,
         };
-        const { salvarPerfume } = await import("@/server/catalog");
-        const resultado = await salvarPerfume(entrada, params.id);
-        if (!resultado.ok) return json({ erro: resultado.erro }, resultado.status);
-        return json({ perfume: resultado.perfume });
+        const { ErroCliente, salvarPerfume } = await import("@/server/catalog");
+        try {
+          const resultado = await salvarPerfume(entrada, params.id);
+          if (!resultado.ok) return json({ erro: resultado.erro }, resultado.status);
+          return json({ perfume: resultado.perfume });
+        } catch (erro) {
+          const mensagem = erro instanceof ErroCliente ? erro.message : "Não foi possível salvar.";
+          return json({ erro: mensagem }, 500);
+        }
       },
       DELETE: async ({ request, params }) => {
         const { exigirAdmin, json } = await import("@/server/http");
         const negado = exigirAdmin(request);
         if (negado) return negado;
-        const { excluirPerfume } = await import("@/server/catalog");
-        const resultado = await excluirPerfume(params.id);
-        if (!resultado.ok) return json({ erro: resultado.erro }, resultado.status);
-        return json({ ok: true });
+        const { ErroCliente, excluirPerfume } = await import("@/server/catalog");
+        try {
+          const resultado = await excluirPerfume(params.id);
+          if (!resultado.ok) return json({ erro: resultado.erro }, resultado.status);
+          return json({ ok: true });
+        } catch (erro) {
+          const mensagem = erro instanceof ErroCliente ? erro.message : "Não foi possível excluir.";
+          return json({ erro: mensagem }, 500);
+        }
       },
     },
   },

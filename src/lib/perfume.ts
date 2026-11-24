@@ -59,7 +59,9 @@ export function validarPerfume(
   let imagem: string | null = null;
   if (entrada.imagem_url) {
     const url = entrada.imagem_url.trim();
-    if (!url.startsWith("/uploads/perfumes/") || url.includes("..") || url.includes("\\")) {
+    const local = url.startsWith("/uploads/perfumes/") && !url.includes("..") && !url.includes("\\");
+    const storage = /^https:\/\/[^/]+\/storage\/v1\/object\/(?:public|sign)\/perfumes\//.test(url);
+    if (!local && !storage) {
       return { ok: false, erro: "A foto precisa ser enviada pelo admin." };
     }
     imagem = url;

@@ -24,6 +24,18 @@ describe("perfume", () => {
     expect(resultado.ok).toBe(false);
   });
 
+  it("aceita foto no storage do supabase", () => {
+    const resultado = validarPerfume(
+      {
+        ...base,
+        imagem_url:
+          "https://wpmankwlsjviplzgkpon.supabase.co/storage/v1/object/public/perfumes/frasco.webp",
+      },
+      null,
+    );
+    expect(resultado.ok).toBe(true);
+  });
+
   it("aceita foto salva no admin", () => {
     const resultado = validarPerfume(
       { ...base, imagem_url: "/uploads/perfumes/frasco.webp" },

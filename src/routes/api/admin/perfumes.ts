@@ -8,8 +8,13 @@ export const Route = createFileRoute("/api/admin/perfumes")({
         const { exigirAdmin, json } = await import("@/server/http");
         const negado = exigirAdmin(request);
         if (negado) return negado;
-        const { listarAdmin } = await import("@/server/catalog");
-        return json(await listarAdmin());
+        const { ErroCliente, listarAdmin } = await import("@/server/catalog");
+        try {
+          return json(await listarAdmin());
+        } catch (erro) {
+          const mensagem = erro instanceof ErroCliente ? erro.message : "Não foi possível ler o catálogo.";
+          return json({ erro: mensagem }, 500);
+        }
       },
       POST: async ({ request }) => {
         const { exigirAdmin, json } = await import("@/server/http");
@@ -17,10 +22,15 @@ export const Route = createFileRoute("/api/admin/perfumes")({
         if (negado) return negado;
         const entrada = await lerEntrada(request);
         if (entrada instanceof Response) return entrada;
-        const { salvarPerfume } = await import("@/server/catalog");
-        const resultado = await salvarPerfume(entrada, null);
-        if (!resultado.ok) return json({ erro: resultado.erro }, resultado.status);
-        return json({ perfume: resultado.perfume }, 201);
+        const { ErroCliente, salvarPerfume } = await import("@/server/catalog");
+        try {
+          const resultado = await salvarPerfume(entrada, null);
+          if (!resultado.ok) return json({ erro: resultado.erro }, resultado.status);
+          return json({ perfume: resultado.perfume }, 201);
+        } catch (erro) {
+          const mensagem = erro instanceof ErroCliente ? erro.message : "Não foi possível salvar.";
+          return json({ erro: mensagem }, 500);
+        }
       },
     },
   },
